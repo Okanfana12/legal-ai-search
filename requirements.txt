@@ -1,0 +1,13 @@
+langchain
+langchain-openai
+langchain-community
+langchain-chroma
+openai
+chromadb
+pypdf
+streamlit
+pandas
+numpy
+python-dotenv
+langsmith
+pytest
