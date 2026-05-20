@@ -1,8 +1,8 @@
-# legal-ai-search
-
 # ⚖️ Legal AI — RAG Pipeline for Legal Document Analysis
 
-A production-ready RAG (Retrieval-Augmented Generation) pipeline designed for legal document analysis, built with LangChain, FAISS, and LLM integration (OpenAI / Claude).
+> ⚠️ **Note importante — Version démo**  
+> Ce projet a été développé à titre de démonstration avec les APIs **OpenAI** et **Claude (Anthropic)**.  
+> Dans un contexte professionnel impliquant des données sensibles ou personnelles, je privilégierais une stack **100% locale et souveraine** (Mistral via Ollama, embeddings HuggingFace, FAISS local) afin de garantir la confidentialité des données et la conformité RGPD.
 
 ---
 
@@ -18,7 +18,7 @@ Permettre l'interrogation intelligente de documents juridiques (contrats, jurisp
 documents/          ← Sources juridiques (PDF, DOCX, TXT)
 ingestion/          ← Parsers, chunking, nettoyage
 embeddings/         ← Génération et stockage des embeddings
-vector_store/       ← FAISS / Chroma (local & offline)
+vector_store/       ← FAISS local
 rag_pipeline/       ← Chain LangChain / LCEL
 evaluation/         ← RAGAS, métriques, benchmarking
 api/                ← FastAPI endpoint (optionnel)
@@ -26,19 +26,18 @@ api/                ← FastAPI endpoint (optionnel)
 
 ---
 
-## 🛠️ Stack technique
+## 🛠️ Stack technique — Version démo
 
-| Composant         | Technologie                        |
-|-------------------|------------------------------------|
-| Ingestion         | LangChain Loaders (PDF, DOCX, CSV) |
-| Chunking          | RecursiveCharacterTextSplitter     |
-| Embeddings        | OpenAI / Claude opus 3       |
-| Vector Store      | FAISS (offline) / Pinecone (cloud) |
-| LLM               | OpenAI GPT-4 / claude    |
-| RAG Chain         | LangChain LCEL                     |
-| Évaluation        | RAGAS                              |
-| Monitoring        | LangSmith                          |
-| Environnement     | Python 3.11+, UV, dotenv           |
+| Composant         | Technologie (démo)                 | Alternative souveraine            |
+|-------------------|------------------------------------|-----------------------------------|
+| Ingestion         | LangChain Loaders (PDF, DOCX, CSV) | Identique                         |
+| Chunking          | RecursiveCharacterTextSplitter     | Identique                         |
+| Embeddings        | OpenAI text-embedding-3-small      | HuggingFace local (all-MiniLM)    |
+| Vector Store      | FAISS local                        | Identique                         |
+| LLM               | OpenAI GPT-4 / Claude Anthropic    | Mistral via Ollama (100% local)   |
+| RAG Chain         | LangChain LCEL                     | Identique                         |
+| Évaluation        | RAGAS                              | Identique                         |
+| Monitoring        | LangSmith                          | Identique                         |
 
 ---
 
@@ -58,7 +57,7 @@ uv pip install -r requirements.txt
 
 # Configurer les variables d'environnement
 cp .env.example .env
-# Remplir OPENAI_API_KEY, LANGCHAIN_API_KEY, etc.
+# Remplir OPENAI_API_KEY ou ANTHROPIC_API_KEY
 ```
 
 ---
@@ -93,19 +92,23 @@ python evaluation/evaluate.py --dataset data/eval_dataset.json
 
 ---
 
-## 🔒 Souveraineté des données
+## 🔒 Vers une version souveraine
 
-Ce pipeline est conçu pour fonctionner **100% en local** :
-
-- Embeddings via HuggingFace (offline)
-- LLM via **Mistral + Ollama** (aucune donnée envoyée en dehors)
-- Vector store FAISS local
+Pour un déploiement en environnement sensible (données personnelles, secteur juridique, défense) :
 
 ```bash
-# Lancer Mistral en local
+# Lancer Mistral en local via Ollama
 ollama pull mistral
+
+# Utiliser les embeddings HuggingFace locaux
+# Aucune donnée ne quitte l'infrastructure
 python rag_pipeline/run_local.py
 ```
+
+Cette configuration garantit :
+- ✅ Aucune donnée envoyée à des APIs externes
+- ✅ Conformité RGPD
+- ✅ Déployable on-premise ou sur cloud privé (AWS, Kubernetes)
 
 ---
 
@@ -131,12 +134,10 @@ pytest tests/
 ## 📌 Roadmap
 
 - [x] Pipeline RAG de base
-- [x] Ingestion multi-sources (PDF, DOCX, CSV, SQL)
+- [x] Ingestion multi-sources (PDF, DOCX, CSV)
 - [x] Évaluation RAGAS
-- [x] Mode offline Mistral
-- [x] Interface Streamlit
-- [x] Agent LangGraph pour workflow juridique complexe
-- [x] Déploiement Kubernetes
+- [x] Versionning code Github Actions/Codespaces
+- [x] Déploiement streamlit
 
 ---
 
