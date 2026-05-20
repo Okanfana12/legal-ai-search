@@ -134,9 +134,9 @@ pytest tests/
 - [x] Ingestion multi-sources (PDF, DOCX, CSV, SQL)
 - [x] Évaluation RAGAS
 - [x] Mode offline Mistral
-- [ ] Interface Streamlit
-- [ ] Agent LangGraph pour workflow juridique complexe
-- [ ] Déploiement Kubernetes
+- [x] Interface Streamlit
+- [x] Agent LangGraph pour workflow juridique complexe
+- [x] Déploiement Kubernetes
 
 ---
 
