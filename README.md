@@ -143,7 +143,7 @@ pytest tests/
 ## 👤 Auteur
 
 AI Engineer / Data Scientist — spécialisée RAG, LLM, évaluation de modèles  
-Toulouse, France
+île de France, Toulouse, France
 
 ---
 
