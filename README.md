@@ -142,7 +142,7 @@ pytest tests/
 ---
 
 ## 👤 Auteur
-
+Oumou Kanfana
 AI Engineer / Data Scientist — spécialisée RAG, LLM, évaluation de modèles  
 île de France, Toulouse, France
 
