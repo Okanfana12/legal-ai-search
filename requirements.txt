@@ -1,5 +1,6 @@
 langchain
 langchain-openai
+langchain-anthropic
 langchain-community
 langchain-chroma
 openai
@@ -11,3 +12,7 @@ numpy
 python-dotenv
 langsmith
 pytest
+# ── API REST ──
+fastapi
+uvicorn[standard]
+httpx          # client HTTP async, utilisé aussi par pytest pour tester FastAPI
