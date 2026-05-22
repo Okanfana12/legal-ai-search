@@ -7,11 +7,41 @@ import sys
 import logging
 from dataclasses import dataclass
 
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
-from langchain_anthropic import ChatAnthropic
-from langchain_core.prompts import PromptTemplate
-from langchain_core.documents import Document
+# Compatibilité avec les différentes distributions de LangChain
+try:
+    from langchain_chroma import Chroma
+except Exception:
+    try:
+        from langchain.vectorstores import Chroma
+    except Exception:
+        Chroma = None
+
+try:
+    from langchain_openai import OpenAIEmbeddings
+except Exception:
+    try:
+        from langchain.embeddings.openai import OpenAIEmbeddings
+    except Exception:
+        OpenAIEmbeddings = None
+
+try:
+    from langchain_anthropic import ChatAnthropic
+except Exception:
+    try:
+        from langchain.chat_models import ChatAnthropic
+    except Exception:
+        ChatAnthropic = None
+
+try:
+    from langchain_core.prompts import PromptTemplate
+    from langchain_core.documents import Document
+except Exception:
+    try:
+        from langchain.prompts import PromptTemplate
+        from langchain.schema import Document
+    except Exception:
+        PromptTemplate = None
+        Document = None
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config import (
@@ -91,6 +121,12 @@ def load_vector_store() -> Chroma:
         )
 
     logger.info(f"Chargement ChromaDB depuis {CHROMA_DIR}...")
+
+    if Chroma is None or OpenAIEmbeddings is None:
+        raise RetrieverError(
+            "Paquet LangChain manquant. Activez votre venv et installez\n"
+            "les dépendances : `pip install -r requirements.txt`"
+        )
 
     embeddings = OpenAIEmbeddings(
         model=OPENAI_EMBEDDING_MODEL
@@ -216,6 +252,12 @@ def generate_response(
         reponse generee par Claude
     """
     logger.info(f"Generation avec {ANTHROPIC_MODEL}...")
+
+    if ChatAnthropic is None or PromptTemplate is None:
+        raise RetrieverError(
+            "Paquet LangChain / Anthropic manquant. Activez votre venv et installez\n"
+            "les dépendances : `pip install -r requirements.txt`"
+        )
 
     llm = ChatAnthropic(
         model=ANTHROPIC_MODEL,
