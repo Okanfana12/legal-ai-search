@@ -1,8 +1,11 @@
 langchain
 langchain-openai
+langchain-anthropic
 langchain-community
 langchain-chroma
+langchain-text-splitters
 openai
+anthropic
 chromadb
 pypdf
 streamlit
