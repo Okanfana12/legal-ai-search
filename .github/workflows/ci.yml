@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate code and image
+    runs-on: ubuntu-latest
+    env:
+      PYTHONIOENCODING: utf-8
+      OPENAI_API_KEY: dummy
+      ANTHROPIC_API_KEY: dummy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest
+
+      - name: Check Python syntax
+        run: python -m py_compile src/*.py
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for validation
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: legal-ai-search:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container smoke test
+        run: |
+          docker run -d --name legal-ai-ci -p 8501:8501 \
+            -e OPENAI_API_KEY=dummy \
+            -e ANTHROPIC_API_KEY=dummy \
+            -e PYTHONIOENCODING=utf-8 \
+            legal-ai-search:ci
+
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:8501/_stcore/health >/dev/null; then
+              echo "Streamlit healthcheck passed"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Streamlit healthcheck failed"
+              docker logs legal-ai-ci
+              docker rm -f legal-ai-ci
+              exit 1
+            fi
+            sleep 2
+          done
+
+          docker rm -f legal-ai-ci

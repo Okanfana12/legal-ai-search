@@ -3,6 +3,10 @@
 > Moteur de recherche juridique intelligent basé sur un pipeline RAG (Retrieval-Augmented Generation).  
 > Posez une question en langage naturel sur vos documents PDF — le système retrouve les passages les plus pertinents et génère une réponse détaillée et sourcée grâce à Claude (Anthropic).
 
+> ⚠️ **Note importante — Version démo**  
+> Ce projet utilise les APIs **OpenAI** (embeddings) et **Claude (Anthropic)** (génération).  
+> Pour un déploiement en environnement sensible (données personnelles, RGPD), voir la section [Vers une version souveraine](#vers-une-version-souveraine).
+
 ---
 
 ## Table des matières
@@ -15,9 +19,7 @@
 - [Installation locale](#installation-locale)
 - [Utilisation](#utilisation)
 - [Déploiement Docker (VPS)](#déploiement-docker-vps)
-- [Variables d'environnement](#variables-denvironnement)
-- [Pipeline RAG — détail technique](#pipeline-rag--détail-technique)
-- [Limitations connues](#limitations-connues)
+- [Vers une version souveraine](#vers-une-version-souveraine)
 
 ---
 
@@ -123,6 +125,19 @@ legal-ai-search/
 
 ---
 
+## 🛠️ Stack technique
+
+| Composant         | Technologie (démo)                 | Alternative souveraine            |
+|-------------------|------------------------------------|-----------------------------------|
+| Ingestion         | LangChain Loaders (PDF, DOCX, CSV) | Identique                         |
+| Chunking          | RecursiveCharacterTextSplitter     | Identique                         |
+| Embeddings        | OpenAI text-embedding-ada-002      | HuggingFace local (all-MiniLM)    |
+| Vector Store      | ChromaDB                           | FAISS local                       |
+| LLM               | Claude Sonnet 4.6 (Anthropic)      | Mistral via Ollama (100% local)   |
+| RAG Chain         | LangChain LCEL                     | Identique                         |
+
+---
+
 ## Prérequis
 
 - Python 3.11+
@@ -139,15 +154,14 @@ legal-ai-search/
 ```bash
 git clone https://github.com/Okanfana12/legal-ai-search.git
 cd legal-ai-search
-git checkout claude/deploy-model-Afsqa
 ```
 
 ### 2. Créer un environnement virtuel
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # Linux / macOS
-# venv\Scripts\activate         # Windows
+python -m venv .venv
+source .venv/bin/activate        # Linux / macOS
+# .venv\Scripts\activate         # Windows
 ```
 
 ### 3. Installer les dépendances
@@ -165,6 +179,7 @@ cp .env.example .env
 Ouvrir `.env` et renseigner les clés :
 
 ```env
+PYTHONIOENCODING=utf-8
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
@@ -232,7 +247,6 @@ L'application est accessible sur **http://localhost:8501**.
 ```bash
 git clone https://github.com/Okanfana12/legal-ai-search.git
 cd legal-ai-search
-git checkout claude/deploy-model-Afsqa
 ```
 
 ### 2. Configurer l'environnement
@@ -281,12 +295,12 @@ docker logs legal-ai          # Voir les logs
 docker ps                     # Vérifier que le conteneur tourne
 ```
 
-L'application est accessible sur **http://\<IP_VPS\>:8501**.
+L'application est accessible sur **http://<IP_VPS>:8501**.
 
 ### Mettre à jour le code
 
 ```bash
-git pull origin claude/deploy-model-Afsqa
+git pull origin main
 docker build -t legal-ai-search .
 docker stop legal-ai && docker rm legal-ai
 docker run -d --name legal-ai -p 8501:8501 --env-file .env \
@@ -299,6 +313,7 @@ docker run -d --name legal-ai -p 8501:8501 --env-file .env \
 
 | Variable | Valeur par défaut | Description |
 |----------|-------------------|-------------|
+| `PYTHONIOENCODING` | `utf-8` | Encodage Unicode pour caractères accentués |
 | `OPENAI_API_KEY` | — | **Obligatoire.** Clé API OpenAI pour les embeddings |
 | `ANTHROPIC_API_KEY` | — | **Obligatoire.** Clé API Anthropic pour la génération |
 | `CHUNK_SIZE` | `1000` | Taille maximale d'un chunk en caractères |
@@ -328,6 +343,26 @@ docker run -d --name legal-ai -p 8501:8501 --env-file .env \
 
 ---
 
+## Vers une version souveraine
+
+Pour un déploiement en environnement sensible (données personnelles, secteur juridique, défense) :
+
+```bash
+# Lancer Mistral en local via Ollama
+ollama pull mistral
+
+# Utiliser les embeddings HuggingFace locaux
+# Aucune donnée ne quitte l'infrastructure
+python src/retriever_local.py
+```
+
+Cette configuration garantit :
+- ✅ Aucune donnée envoyée à des APIs externes
+- ✅ Conformité RGPD
+- ✅ Déployable on-premise ou sur cloud privé (AWS, Kubernetes)
+
+---
+
 ## Limitations connues
 
 - **Qualité des PDFs** — les PDFs scannés sans OCR ne sont pas lisibles par PyPDFLoader
@@ -335,3 +370,9 @@ docker run -d --name legal-ai -p 8501:8501 --env-file .env \
 - **Taille du corpus** — au-delà de 100 000 chunks, les performances de ChromaDB peuvent se dégrader
 - **Coût API** — chaque question génère un appel OpenAI (embedding) et un appel Anthropic (génération)
 - **Mise à jour** — l'ajout de nouveaux documents nécessite de relancer `indexer.py`
+
+---
+
+## 📄 Licence
+
+MIT
